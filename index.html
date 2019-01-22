@@ -22,38 +22,52 @@
     </header>
 
     <main>
-        <section class="main_content_wrapper">
-            <div class="filters is_open">
+        <section class="main_content_wrapper flexbox">
+            <form class="filters is_open" id="js-filters">
                 <div class="filters_content"></div>
                 <div class="filter">
                     <div class="search-grouping">
                         <label class="label" for="contributor_employer">Business Name</label>
                         <div class="filter-search">
-                            <input type="text" name="contributor_employer" id="contributor_employer">
-                            <button class="button-search" type="button"></button>
+                            <input type="text" name="contributor_employer" id="js-contributor_employer" required>
+                            <!-- <button class="button-search" type="button"></button> -->
                         </div>
                     </div>
                     <div class="search-grouping">
                         <label class="label" for="date_range">Time Period</label>
                         <div class="filter-search">
-                            <div class="filter_date_range">
+                            <div class="date_range_select"></div>
+                                <input list="date_range" name="date_range" id="js_date_range">
+                                <datalist id="date_range">
+                                    <option value="2018">2017-2018</option>
+                                    <option value="2016">2015-2016</option>
+                                    <option value="2014">2013-2014</option>
+                                    <option value="2012">2011-2012</option>
+                                    <option value="2010">2009-2010</option>
+                                    <option value="2008">2007-2008</option>
+                                    <option value="2006">2005-2006</option>
+                                    <option value="2004">2003-2004</option>
+                                    <option value="2002">2001-2002</option>
+                                    <option value="2000">1999-2000</option>
+                                </datalist>
+                            <!-- <div class="filter_date_range">
                                 <div class="date_min">
                                     <label for="date_min">Beginning</label>
-                                    <input type="text" id="date_min" name="date_min">
+                                    <input type="text" id="js-date_min" name="date_min">
                                 </div>
                                 <div class="range_hyphen">-</div>
                                 <div class="date_max">
                                     <label for="date_max">Ending</label>
-                                    <input type="text" id="date_max" name="date_max">
+                                    <input type="text" id="js-date_max" name="date_max">
                                 </div>
-                                <button class="button-search" type="button"></button>
-                            </div>
+                                <button class="button-search" type="button"></button> 
+                            </div> -->
                         </div>
                     </div>
                     <div class="search-grouping">
                         <label class="label" for="state_select">State</label>
                         <div class="filter-search">
-                            <input list="states" name="states" id="states">
+                            <input list="states" name="states" id="js-state">
                             <datalist id="states">
                                 <option value="AL">Alabama (AL)</option>
                                 <option value="AK">Alaska (AK)</option>
@@ -107,11 +121,14 @@
                                 <option value="WI">Wisconsin</option>
                                 <option value="WY">Wyoming</option>
                             </datalist>
-                            <button class="button-search" type="button"></button>
+                            <!-- <button class="button-search" type="button"></button> -->
                         </div>
                     </div>
+                    <div class="search-grouping submit">
+                        <input type="submit" value="Search">
+                    </div>
                 </div>
-            </div>
+            </form>
             <div class="data_container">
                 <div class="data_results">
                     <h2>DATA GOES HERE</h2>
