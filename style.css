@@ -13,9 +13,33 @@ header {
 }
 
 main {
-	background: #bbb;
+	background: #ccc;
+}
+
+.flexbox {
+	display: flex;
+}
+
+.filters {
+	flex: 1;
+}
+
+.search-grouping {
+	margin: 10px 5px;
+}
+
+.filter_date_range {
+	display: flex;
+}
+
+.data_container {
+	display: flex;
+	flex: 4;
+	align-content: center;
+	justify-content: center;
+	margin: 0;
 }
 
 footer {
-	
+	background: #eee;
 }
