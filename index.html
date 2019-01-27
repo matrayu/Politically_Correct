@@ -20,7 +20,6 @@
             </ul>
         </nav>
     </header>
-
     <main>
         <section class="main_content_wrapper flexbox">
             <form class="filters is_open" id="js-filters">
@@ -29,7 +28,7 @@
                     <div class="search-grouping">
                         <label class="label" for="contributor_employer">Business Name</label>
                         <div class="filter-search">
-                            <input type="text" name="contributor_employer" id="js-contributor_employer" required>
+                            <input type="text" name="contributor_employer" id="js-contributor_employer" required value="Netflix">
                             <!-- <button class="button-search" type="button"></button> -->
                         </div>
                     </div>
@@ -37,7 +36,7 @@
                         <label class="label" for="date_range">Time Period</label>
                         <div class="filter-search">
                             <div class="date_range_select"></div>
-                                <input list="date_range" name="date_range" id="js_date_range">
+                                <input list="date_range" name="date_range" id="js_date_range" value="2018">
                                 <datalist id="date_range">
                                     <option value="2018">2017-2018</option>
                                     <option value="2016">2015-2016</option>
@@ -67,7 +66,7 @@
                     <div class="search-grouping">
                         <label class="label" for="state_select">State</label>
                         <div class="filter-search">
-                            <input list="states" name="states" id="js-state">
+                            <input list="states" name="states" id="js-state" value="NY">
                             <datalist id="states">
                                 <option value="AL">Alabama (AL)</option>
                                 <option value="AK">Alaska (AK)</option>
