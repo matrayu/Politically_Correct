@@ -1,5 +1,7 @@
 'use strict';
 
+var axios = require('axios')
+
 
 const companySearchURL = 'https://api.open.fec.gov/v1/schedules/schedule_a/';
 const committeeSearchURL = 'https://api.open.fec.gov/v1/committee/';
@@ -2989,5 +2991,8 @@ function finishDataProcessing(party) {
 //fetchPacDonations(createPacSearchURL(pacID));
 //collectPartyByDonation(empSearch);
 
-$(watchForm);
+//$(watchForm);
+
+fetchInitialData(createDonationSearchURL('Netflix', 2018, 'NY'))
+
 

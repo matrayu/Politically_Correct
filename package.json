@@ -15,5 +15,8 @@
   "bugs": {
     "url": "https://github.com/matrayu/Politically_Correct/issues"
   },
-  "homepage": "https://github.com/matrayu/Politically_Correct#readme"
+  "homepage": "https://github.com/matrayu/Politically_Correct#readme",
+  "dependencies": {
+    "axios": "^0.18.0"
+  }
 }
