@@ -2541,6 +2541,7 @@ function collectPartyByDonation(donationObj) {
     //checkComplete();
   }
 
+  /*
   let completed = 0;
   function checkComplete(){
     completed++
@@ -2549,6 +2550,7 @@ function collectPartyByDonation(donationObj) {
       // every step returns back to this initial function
     }
   }
+  */
 
 
   //NEED TO WAIT FOR PAC ANALYSIS TO COMPLETE OR THIS IS INCORRECT
@@ -2556,7 +2558,6 @@ function collectPartyByDonation(donationObj) {
   //console.log(partyCount)
   
 }
-//Above is employee search
 
 function fetchCommittePacRecipients(url) {
     console.log('fetchCommittePacRecipients ran')
@@ -2569,7 +2570,7 @@ function fetchCommittePacRecipients(url) {
             throw new Error(response.statusText);
         })
         .then(function(responseJson) {
-            collectPACRecipients(responseJson);
+            collectPACDonations(responseJson);
             
         })
         .catch(function(err) {
@@ -2609,6 +2610,7 @@ function createCommitteSearchURL(committeeID) {
 
 function fetchBulkIds(url) {
   console.log('fetchBulkIds ran');
+  console.log(url)
  
   fetch(url)
   .then(function(response) {
@@ -2667,7 +2669,7 @@ function collectPacDonations(recipentsObj) {
 
   
   //COMMENTED OUT PAGINATION FOR NOW
-  
+  /*
   // get the next page of data if the currect page is less than the total pages
   if(currentPage < recipentsObj.pagination.pages){
 
@@ -2687,19 +2689,35 @@ function collectPacDonations(recipentsObj) {
     // display the total contributions amount
     //$('.data_results h2').text(`DEMS: ${partyCount.dem} REP: ${partyCount.rep}`); 
   }
+  */
   
   
   //send collected recipients out for a bulk search for their info
   let allPacDonations = reduceDownDonationsByID(resultsData);
-  if (allPacDonations.length > 99) {
-      let pacsOf99 = []
-      for (let i = 0; i < 99; i++) {
-        pacsOf99.push(allPacDonations[i])
-      }
-      console.log(`about to search ${pacsOf99.length} PACs using the bulk search`)
-      bulkIdQueryString(pacsOf99);
+  let totalDonationsToCheck = allPacDonations.length
+  console.log(`TOTAL DONATIONS TO CHECK IS: ${totalDonationsToCheck}`)
+  let pacsOf100 = []
+  if (totalDonationsToCheck > 99) {
+    for (let i = 0; i < totalDonationsToCheck; i++) {
+        pacsOf100.push(allPacDonations[i])
+        if (pacsOf100.length === 100) {
+            bulkIdQueryString(pacsOf100);
+            pacsOf100 = []
+        }
+    }
+    //console.log(`pacsOf100 has ${pacsOf100.length} donations to check`)
+    //totalDonationsToCheck -= 100
+    //console.log(`about to search ${pacsOf100.length} PACs using the bulk search`)
+    
   }
-  bulkIdQueryString(allPacDonations);
+  console.log(`about to search ${totalDonationsToCheck} PACs using the bulk search`)
+  console.log('here')
+  if (pacsOf100.length != 0) {
+    return bulkIdQueryString(pacsOf100);
+  }
+  else {
+    bulkIdQueryString(allPacDonations);
+    }
 }
 
 
@@ -2861,6 +2879,8 @@ function combineDataWithDonations(arr1, arr2) {
 
 
 }
+
+
 
 function determinePacAffiliation(arr) {
   console.log('determinePacAffiliation ran');
