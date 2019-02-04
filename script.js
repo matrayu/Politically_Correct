@@ -1,7 +1,8 @@
-let axios = require('axios')
-let _ = require('lodash');
-
-
+//let currentPage = 1;
+//let totalPages = 1
+let pacIDs = []
+let employeeDonations = []
+let lastIndex = ''
 
 
 function watchForm() {
@@ -18,29 +19,31 @@ function watchForm() {
         $('.state').text(state);
         $('.progress').text('Loading...');
         $('#js-filters').hide();
-        getEmployeeDonations(businessName, dateRange, state);
+        processData(businessName, dateRange, state);
     })  
 }
 
 
 const getEmployeeDonations = async (company, dateRange, state) => {
     console.log('getEmployeeDonations ran')
+
     try {
-        const response = await axios.get(`https://api.open.fec.gov/v1/schedules/schedule_a/?contributor_employer=${company}&contributor_state=${state}&two_year_transaction_period=${dateRange}&per_page=100&sort_null_only=false&sort_hide_null=false&sort=contribution_receipt_date&contributor_type=individual&is_individual=true&api_key=3vvb3VZE0SZq372eLAOqPJhIaaspSBH7HukmNTPK`)
+        console.log(`current page is ${currentPage}`)
+        const response = await axios.get(`https://api.open.fec.gov/v1/schedules/schedule_a/?contributor_employer=${company}&contributor_state=${state}&two_year_transaction_period=${dateRange}&per_page=100&page=${currentPage}&sort_null_only=false&sort_hide_null=false&sort=contribution_receipt_date&contributor_type=individual&is_individual=true&api_key=3vvb3VZE0SZq372eLAOqPJhIaaspSBH7HukmNTPK`)
 
         const len = response.data.results.length
         if (len == 0) throw `Couldn't find any data for ${company} during the ${dateRange} period in ${state}.`
         
-        const donationObj = response.data.results
-        let pacIDs = []
-        let employeeDonations = []
-        let partyCount = {rep:0, dem:0, ind:0, pac:0};
-        let allPartyObj = []
+        totalPages = response.data.pagination.pages
+        lastIndex = response.data.pagination.last_indexes.last_index
 
+        const donationObj = response.data.results
+        
+        
         let reduced = reduceDownParty(donationObj)
         
         donationObj.forEach((element) => {
-            if (element.committee.party === null) {
+            if (element.committee.party === null || element.committee.party === "NNE") {
                 pacIDs.push(element.committee.committee_id)
             }
         });
@@ -50,8 +53,11 @@ const getEmployeeDonations = async (company, dateRange, state) => {
         //create array of data found when searching employee donations
         employeeDonations.partyData = reduced
         employeeDonations.pacData = pacIDs
+
+        console.log(`Total pages of employee donations is: ${totalPages} and the last index was ${lastIndex}`)
+
         //return reduced
-        return(employeeDonations)
+        return employeeDonations
 
     
     //how do I log the actual error that is being displayed (i.e. incorrect API key)    
@@ -59,6 +65,7 @@ const getEmployeeDonations = async (company, dateRange, state) => {
         throw new Error(error)
     }
 }
+
 
 const getPacDonations = async (pacID) => {
     console.log('getPacDonations ran')
@@ -154,7 +161,6 @@ const getPacRecipients = async (pacDonations) => {
     return processedPacData
 }
 
-
 function determinePacAffiliation (pacParties) {
     console.log('determinePacAffiliation ran')
     let pacParty = []
@@ -240,8 +246,8 @@ function reduceDownDonationsByID(arr) {
 
 function finalTallyOfDonations (arr1, arr2) {
     console.log('finalTallyOfDonations ran');
-
     arr2.forEach(function (d, i) {
+        
         if(arr1.partyData.hasOwnProperty(d.pacParty)) {
           arr1.partyData[arr2[i].pacParty] += arr1.pacData[arr2[i].pacID]
           arr1.partyData[null] -= arr1.pacData[arr2[i].pacID]
@@ -260,16 +266,16 @@ function finalTallyOfDonations (arr1, arr2) {
 const processData = async (company, dateRange, state) => {
     console.log('processData ran')
     const employeeData = await getEmployeeDonations(company, dateRange, state)
-    console.log(employeeData)
     const pacDonations = await getPacDonations(employeeData.pacData)
     const partiesFoundInPacs = await getPacRecipients(pacDonations)
     const pacAffiliaton = await determinePacAffiliation(partiesFoundInPacs)
+    console.log(pacAffiliaton)
     const finalTally = await finalTallyOfDonations(employeeData, pacAffiliaton)
     console.log(finalTally)
 }
 
 /*
-processData('Amazon', 2018, 'CA')
+processData('Monsanto', 2016, 'IL', 600)
     .then((message) => {
         console.log(message);
     }).catch((error) => {

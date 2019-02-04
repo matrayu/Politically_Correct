@@ -2477,16 +2477,9 @@ function watchForm() {
     })  
 }
 
-const fetchInitialData = async (url) => {
+function fetchInitialData(url) {
     console.log('fetchInitialData ran');
-    console.log(url)
-    return
     
-    const response = await axios.get(url);
-    const 
-
-
-    /*
     fetch(url)
         .then(function(response) {
             console.log(response.statusText);
@@ -2502,7 +2495,6 @@ const fetchInitialData = async (url) => {
         .catch(function(err) {
             $('#js-error-message').text(`Something went wrong: ${err.message}`)
         })
-    */
 }
 
 
