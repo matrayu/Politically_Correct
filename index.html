@@ -128,20 +128,30 @@
                     </div>
                 </div>
             </form>
+
+            <section class="information" style="display: none;">
+                <h2 class="business-name"></h2>
+                <h3 class="time-period"></h3>
+                <h4 class="state"></h4>
+                <p class="progress"></p>
+            </section>
+
             <div class="data_container">
-                <div class="data_results">
-                    <h2>DATA GOES HERE</h2>
+                <div class="data_results js-data_results" style="display: none;">
+                    <h2></h2>
                     <p id="js-error-message" class="error-message"></p>
+                </div>
+                <div class="loading js-loading" style="display: none;">
+                    <h2></h2>
+                    <div class="loading-bar"></div>
+                    <div class="loading-bar"></div>
+                    <div class="loading-bar"></div>
+                    <div class="loading-bar"></div>
                 </div>
             </div>
         </section>
 
-        <section class="information">
-            <h2 class="business-name"></h2>
-            <h3 class="time-period"></h3>
-            <h4 class="state"></h4>
-            <p class="progress"></p>
-        </section>
+        
     </main>
 
     <footer>Copyright MF</footer>

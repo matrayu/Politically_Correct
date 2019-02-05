@@ -1,15 +1,23 @@
 let currentPage = 1;
-//let totalPages = 1
 let pacIDs = []
 let allEmployeeDonations = []
 let employeeDonations = []
 let lastIndex = ''
+let businessName = ''
+let dateRange = ''
+let state = ''
+
 
 
 function watchForm() {
     console.log('watchForm ran');
     $('#js-filters').submit(event => {
         event.preventDefault();
+        $('.js-data_results').hide();
+        pacIDs = []
+        allEmployeeDonations = []
+        employeeDonations = []
+        lastIndex = ''
         businessName = $('#js-contributor_employer').val();
         dateRange = $('#js_date_range').val();
         state = $('#js-state').val();
@@ -18,9 +26,11 @@ function watchForm() {
         $('.business-name').text(businessName);
         $('.time-period').text(dateRange);
         $('.state').text(state);
-        $('.progress').text('Loading...');
-        $('#js-filters').hide();
+        //$('.progress').text('Loading...');
+        //$('#js-filters').hide();
+        $('.js-loading').show();
         processData(businessName, dateRange, state);
+
     })  
 }
 
@@ -39,6 +49,7 @@ const getEmployeeDonations = async (company, dateRange, state, index) => {
     if(index === undefined) {
         console.log('index not defined')
         try {
+            $('.js-loading h2').text(`Please be patient as we load results. This could take a minute...`)
             const response = await axios.get(`https://api.open.fec.gov/v1/schedules/schedule_a/?contributor_employer=${company}&contributor_state=${state}&two_year_transaction_period=${dateRange}&per_page=100&sort_null_only=false&sort_hide_null=false&sort=contribution_receipt_date&contributor_type=individual&is_individual=true&api_key=3vvb3VZE0SZq372eLAOqPJhIaaspSBH7HukmNTPK`)
 
             const len = response.data.results.length
@@ -50,8 +61,8 @@ const getEmployeeDonations = async (company, dateRange, state, index) => {
 
             const donationObj = response.data.results
 
-            await processEmployeeDonations(response, lastIndex);
-            return
+            const totalEmployeeDonations = await processEmployeeDonations(response, lastIndex);
+            return totalEmployeeDonations
         
         //how do I log the actual error that is being displayed (i.e. incorrect API key)    
         } catch(error) {
@@ -79,10 +90,11 @@ const processEmployeeDonations = async (dataObj, lastIndex) => {
     for (let i = 1; i <= dataObj.data.pagination.pages; i++) {
         console.log('current page processing is ', i);
         console.log('total pages to process are ', dataObj.data.pagination.pages);
-        await getEmployeeDonations('Netflix', 2018, 'NY', lastIndex);
+        $('.js-loading h2').text(`Loading employee donations (${Math.floor((i/dataObj.data.pagination.pages)*100)}%)`);
+        await getEmployeeDonations(businessName, dateRange, state, lastIndex);
     }
-    console.log(`We were able to retrieve ${allEmployeeDonations.length} employee donations`)
-    
+    $('.js-loading h2').text(`We were able to analyze ${allEmployeeDonations.length} employee donations from ${dateRange-1}-${dateRange}!`)
+    //$('.progress').text('');
     let reduced = reduceDownParty(allEmployeeDonations)
     
     allEmployeeDonations.forEach((element) => {
@@ -303,11 +315,16 @@ const processData = async (company, dateRange, state, index) => {
     console.log('processData ran')
     const employeeData = await getEmployeeDonations(company, dateRange, state, index)
     const pacDonations = await getPacDonations(employeeDonations.pacData)
-    //const partiesFoundInPacs = await getPacRecipients(pacDonations)
-    //const pacAffiliaton = await determinePacAffiliation(partiesFoundInPacs)
-    //console.log(pacAffiliaton)
-    //const finalTally = await finalTallyOfDonations(employeeData, pacAffiliaton)
-    //console.log(finalTally)
+    const partiesFoundInPacs = await getPacRecipients(pacDonations)
+    const pacAffiliaton = await determinePacAffiliation(partiesFoundInPacs)
+    console.log(pacAffiliaton)
+    const finalTally = await finalTallyOfDonations(employeeData, pacAffiliaton)
+    $('.js-loading').hide();
+    $('.js-data_results').show();
+    $('.js-data_results h2').text(`DEMS: ${finalTally['DEMOCRATIC PARTY']} REP: ${finalTally[null]}`);
+    
+
+    console.log(finalTally)
 }
 
 /*
