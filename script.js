@@ -1,6 +1,7 @@
-//let currentPage = 1;
+let currentPage = 1;
 //let totalPages = 1
 let pacIDs = []
+let allEmployeeDonations = []
 let employeeDonations = []
 let lastIndex = ''
 
@@ -24,46 +25,82 @@ function watchForm() {
 }
 
 
-const getEmployeeDonations = async (company, dateRange, state) => {
+function combineEmployeeData (arr) {
+    console.log('combineEmployeeData ran')
+    arr.forEach((itm) => {
+        allEmployeeDonations.push(itm)
+    })
+}
+
+
+const getEmployeeDonations = async (company, dateRange, state, index) => {
     console.log('getEmployeeDonations ran')
+    console.log('index is ', lastIndex)
+    if(index === undefined) {
+        console.log('index not defined')
+        try {
+            const response = await axios.get(`https://api.open.fec.gov/v1/schedules/schedule_a/?contributor_employer=${company}&contributor_state=${state}&two_year_transaction_period=${dateRange}&per_page=100&sort_null_only=false&sort_hide_null=false&sort=contribution_receipt_date&contributor_type=individual&is_individual=true&api_key=3vvb3VZE0SZq372eLAOqPJhIaaspSBH7HukmNTPK`)
 
-    try {
-        console.log(`current page is ${currentPage}`)
-        const response = await axios.get(`https://api.open.fec.gov/v1/schedules/schedule_a/?contributor_employer=${company}&contributor_state=${state}&two_year_transaction_period=${dateRange}&per_page=100&page=${currentPage}&sort_null_only=false&sort_hide_null=false&sort=contribution_receipt_date&contributor_type=individual&is_individual=true&api_key=3vvb3VZE0SZq372eLAOqPJhIaaspSBH7HukmNTPK`)
+            const len = response.data.results.length
+            if (len == 0) throw `Couldn't find any data for ${company} during the ${dateRange} period in ${state}.`
+            
+            totalPages = response.data.pagination.pages
+            lastIndex = response.data.pagination.last_indexes.last_index
+            combineEmployeeData(response.data.results)
 
-        const len = response.data.results.length
-        if (len == 0) throw `Couldn't find any data for ${company} during the ${dateRange} period in ${state}.`
+            const donationObj = response.data.results
+
+            await processEmployeeDonations(response, lastIndex);
+            return
         
-        totalPages = response.data.pagination.pages
-        lastIndex = response.data.pagination.last_indexes.last_index
-
-        const donationObj = response.data.results
-        
-        
-        let reduced = reduceDownParty(donationObj)
-        
-        donationObj.forEach((element) => {
-            if (element.committee.party === null || element.committee.party === "NNE") {
-                pacIDs.push(element.committee.committee_id)
-            }
-        });
-        
-        pacIDs = _.countBy(pacIDs)
-
-        //create array of data found when searching employee donations
-        employeeDonations.partyData = reduced
-        employeeDonations.pacData = pacIDs
-
-        console.log(`Total pages of employee donations is: ${totalPages} and the last index was ${lastIndex}`)
-
-        //return reduced
-        return employeeDonations
-
-    
-    //how do I log the actual error that is being displayed (i.e. incorrect API key)    
-    } catch(error) {
-        throw new Error(error)
+        //how do I log the actual error that is being displayed (i.e. incorrect API key)    
+        } catch(error) {
+            throw new Error(error)
+        }
     }
+    else {
+        console.log('index is defined');
+        try {
+            const response = await axios.get(`https://api.open.fec.gov/v1/schedules/schedule_a/?contributor_employer=${company}&contributor_state=${state}&two_year_transaction_period=${dateRange}&per_page=100&last_index=${lastIndex}&sort_null_only=false&sort_hide_null=false&sort=contribution_receipt_date&contributor_type=individual&is_individual=true&api_key=3vvb3VZE0SZq372eLAOqPJhIaaspSBH7HukmNTPK`)
+            lastIndex = response.data.pagination.last_indexes.last_index
+            combineEmployeeData(response.data.results)
+            return
+        }
+        catch(error) {
+            throw new Error(error)
+        }
+    }
+}
+
+const processEmployeeDonations = async (dataObj, lastIndex) => {
+    console.log('processEmployeeDonations ran')
+
+    //if there are more pages of donations to get
+    for (let i = 1; i <= dataObj.data.pagination.pages; i++) {
+        console.log('current page processing is ', i);
+        console.log('total pages to process are ', dataObj.data.pagination.pages);
+        await getEmployeeDonations('Netflix', 2018, 'NY', lastIndex);
+    }
+    console.log(`We were able to retrieve ${allEmployeeDonations.length} employee donations`)
+    
+    let reduced = reduceDownParty(allEmployeeDonations)
+    
+    allEmployeeDonations.forEach((element) => {
+        if (element.committee.party === null || element.committee.party === "NNE") {
+            pacIDs.push(element.committee.committee_id)
+        }
+    });
+    
+    pacIDs = _.countBy(pacIDs)
+
+    //create array of data found when searching employee donations
+    employeeDonations.partyData = reduced
+    employeeDonations.pacData = pacIDs
+    console.log(employeeDonations)
+    //console.log(`Total pages of employee donations is: ${totalPages} and the last index was ${lastIndex}`)
+
+    return employeeDonations
+
 }
 
 
@@ -189,7 +226,6 @@ function reduceDownParty(arr) {
             holder[d.committee.party_full] = 1;
         }
     });
-
     return (holder)
 }
 
@@ -263,15 +299,15 @@ function finalTallyOfDonations (arr1, arr2) {
 
 
 
-const processData = async (company, dateRange, state) => {
+const processData = async (company, dateRange, state, index) => {
     console.log('processData ran')
-    const employeeData = await getEmployeeDonations(company, dateRange, state)
-    const pacDonations = await getPacDonations(employeeData.pacData)
-    const partiesFoundInPacs = await getPacRecipients(pacDonations)
-    const pacAffiliaton = await determinePacAffiliation(partiesFoundInPacs)
-    console.log(pacAffiliaton)
-    const finalTally = await finalTallyOfDonations(employeeData, pacAffiliaton)
-    console.log(finalTally)
+    const employeeData = await getEmployeeDonations(company, dateRange, state, index)
+    const pacDonations = await getPacDonations(employeeDonations.pacData)
+    //const partiesFoundInPacs = await getPacRecipients(pacDonations)
+    //const pacAffiliaton = await determinePacAffiliation(partiesFoundInPacs)
+    //console.log(pacAffiliaton)
+    //const finalTally = await finalTallyOfDonations(employeeData, pacAffiliaton)
+    //console.log(finalTally)
 }
 
 /*
