@@ -3,47 +3,94 @@
 }
 
 body {
-	font-family: 'Roboto', sans-serif;
 	margin: 5px 12px;
 	min-width: 296px;
+	font-family: 'Oswald', sans-serif;
 }
 
 header {
-	background: #aaa;
+}
+
+header>h1 {
+	color: #1254e4;
+	font-family: 'Josefin Sans', sans-serif;
+	text-align: center
+}
+
+header>p {
+	color: #000000;
+	font-family: 'Josefin Sans', sans-serif;
+	text-align: center
 }
 
 main {
-	background: #ccc;
+	height: 400px;
+	border: 2px solid black;
 }
 
 .flexbox {
 	display: flex;
+	height: 100%;
 }
 
 .filters {
 	flex: 1;
+	margin: auto 5px auto 5px;
+}
+
+.label {
+	font-size: 21px;
 }
 
 .search-grouping {
 	margin: 10px 5px;
+	font-size: 20px;
 }
 
 .filter_date_range {
 	display: flex;
 }
 
+input[type=submit] {
+	margin-top: 30px;
+	color: white;
+	width: 100%;
+	text-align: center;
+	font-size: 21px;
+	background-color: #1254e4;
+	padding: 8px 12px 8px 12px;
+	box-shadow: 0 12px 16px 0 rgba(0,0,0,0.24), 0 17px 50px 0 rgba(0,0,0,0.19);
+}
+
+input {
+	width: 100%;
+	font-size: 16px;
+	padding: 4px 12px 4px 12px;
+	border-radius: 4px;
+	box-shadow: 0 12px 16px 0 rgba(0,0,0,0.24), 0 17px 50px 0 rgba(0,0,0,0.19);
+}
+
 .data_container {
 	display: flex;
-	flex: 4;
+	flex: 3;
 	align-items: center;
 	justify-content: center;
 	flex-direction: column;
-	margin: 0;
+	margin: 5px;
+	text-align: center;
+	color: white;
+	background: rgb(16, 84, 227);
 }
 
-.data_results>p {
-	text-align: center;
+.loading {
+	font-size: 21px;
 }
+
+.results {
+	font-size: 35px;
+}
+
+
 
 .information {
 	display: flex;
@@ -54,7 +101,9 @@ main {
 }
 
 footer {
-	background: #eee;
+	margin-top: 100px;
+	font-family: 'Josefin Sans', sans-serif;
+	text-align: center
 }
 
 .loading {
@@ -84,6 +133,13 @@ footer {
 .loading-bar:nth-child(4) {
 	background-color: #27ae60;
 	animation-delay: .27s;
+}
+
+.logo {
+	display: block;
+	width: 50px;
+	margin-left: auto;
+	margin-right: auto;
 }
 
 @keyframes loading {

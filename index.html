@@ -6,14 +6,16 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css?family=Josefin+Sans:400,700,700i|Oswald:400,700" rel="stylesheet">
     <title>Politically Correct App</title>
 </head>
 
 <body>
     <header>
-        <h1>Politically Correct App</h1>
-        <p>Find out which way a company leans on the political scale</p>
-        <nav>
+        <img class="logo" src="images/capitol (1).png" alt="logo">
+        <h1>Politically Correct</h1>
+        <p>Find out which way a company leans on the political scale based on its employees donations</p>
+        <nav style='display: none;''>
             <ul>
                 <li>Home</li>
                 <li>About</li>
@@ -28,7 +30,7 @@
                     <div class="search-grouping">
                         <label class="label" for="contributor_employer">Business Name</label>
                         <div class="filter-search">
-                            <input type="text" name="contributor_employer" id="js-contributor_employer" required value="Netflix">
+                            <input type="text" name="contributor_employer" id="js-contributor_employer" value="Netflix" required>
                             <!-- <button class="button-search" type="button"></button> -->
                         </div>
                     </div>
@@ -36,7 +38,7 @@
                         <label class="label" for="date_range">Time Period</label>
                         <div class="filter-search">
                             <div class="date_range_select"></div>
-                                <input list="date_range" name="date_range" id="js_date_range" value="2018">
+                                <input list="date_range" name="date_range" id="js_date_range" value="2012">
                                 <datalist id="date_range">
                                     <option value="2018">2017-2018</option>
                                     <option value="2016">2015-2016</option>
@@ -66,7 +68,7 @@
                     <div class="search-grouping">
                         <label class="label" for="state_select">State</label>
                         <div class="filter-search">
-                            <input list="states" name="states" id="js-state" value="NY">
+                            <input list="states" name="states" id="js-state" value="CA">
                             <datalist id="states">
                                 <option value="AL">Alabama (AL)</option>
                                 <option value="AK">Alaska (AK)</option>
@@ -138,9 +140,10 @@
 
             <div class="data_container">
                 <div class="data_results js-data_results" style="display: none;">
-                    <p class="js-load-1"></p>
-                    <p class="js-load-2"></p>
-                    <p class="results-number" ></p>
+                    <p class="loading js-load-1"></p>
+                    <p class="loading js-load-2"></p>
+                    <p class="results js-dem-results"></p>
+                    <p class="results js-rep-results"></p>
                     <p id="js-error-message" class="error-message"></p>
                 </div>
                 <div class="loading js-loading" style="display: none;">

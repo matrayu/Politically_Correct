@@ -343,10 +343,10 @@ const processData = async (company, dateRange, state, index) => {
     console.log(pacAffiliaton)
     const finalTally = await finalTallyOfDonations(employeeData, pacAffiliaton)
     $('.js-loading').hide();
-    $('.js-load-1').text(`DEMS: ${finalTally['DEMOCRATIC PARTY']} REP: ${finalTally[null]}`);
-    $('.js-load-2').text('')
-    
-    
+    $('.js-load-1').text('');
+    $('.js-load-2').text('');
+    $('.js-dem-results').text(`Democatic Donations: ${finalTally['DEMOCRATIC PARTY']}`);
+    $('.js-rep-results').text(`Republican Donations: ${finalTally['REPUBLICAN PARTY']}`);
 
     console.log(finalTally)
 }
