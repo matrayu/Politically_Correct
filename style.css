@@ -37,7 +37,12 @@ main {
 	flex: 4;
 	align-items: center;
 	justify-content: center;
+	flex-direction: column;
 	margin: 0;
+}
+
+.data_results>p {
+	text-align: center;
 }
 
 .information {

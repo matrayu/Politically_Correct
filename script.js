@@ -1,11 +1,12 @@
 let currentPage = 1;
-let pacIDs = []
-let allEmployeeDonations = []
-let employeeDonations = []
-let lastIndex = ''
-let businessName = ''
-let dateRange = ''
-let state = ''
+let pacIDs = [];
+let allEmployeeDonations = [];
+let employeeDonations = [];
+let lastIndex = '';
+let businessName = '';
+let dateRange = '';
+let state = '';
+let resultsLength = 0;
 
 
 
@@ -29,6 +30,7 @@ function watchForm() {
         //$('.progress').text('Loading...');
         //$('#js-filters').hide();
         $('.js-loading').show();
+        $('.js-data_results').show();
         processData(businessName, dateRange, state);
 
     })  
@@ -49,12 +51,17 @@ const getEmployeeDonations = async (company, dateRange, state, index) => {
     if(index === undefined) {
         console.log('index not defined')
         try {
-            $('.js-loading h2').text(`Please be patient as we load results. This could take a minute...`)
+            $('.js-load-1').text(`Please be patient as we load results. This could take a minute...`)
             const response = await axios.get(`https://api.open.fec.gov/v1/schedules/schedule_a/?contributor_employer=${company}&contributor_state=${state}&two_year_transaction_period=${dateRange}&per_page=100&sort_null_only=false&sort_hide_null=false&sort=contribution_receipt_date&contributor_type=individual&is_individual=true&api_key=3vvb3VZE0SZq372eLAOqPJhIaaspSBH7HukmNTPK`)
 
-            const len = response.data.results.length
-            if (len == 0) throw `Couldn't find any data for ${company} during the ${dateRange} period in ${state}.`
-            
+            resultsLength = response.data.results.length
+            if (resultsLength === 0) {
+                $('.js-load-1').text(`Couldn't find any data for ${businessName} during the ${dateRange} period in ${state}.`)
+                $('.js-load-2').text(`Please try another time period or company.`)
+                $('.js-loading').hide();
+                throw 'No company data!'
+            }
+                
             totalPages = response.data.pagination.pages
             lastIndex = response.data.pagination.last_indexes.last_index
             combineEmployeeData(response.data.results)
@@ -65,20 +72,25 @@ const getEmployeeDonations = async (company, dateRange, state, index) => {
             return totalEmployeeDonations
         
         //how do I log the actual error that is being displayed (i.e. incorrect API key)    
-        } catch(error) {
-            throw new Error(error)
+        } catch(err) {
+            throw(err);
         }
     }
     else {
         console.log('index is defined');
         try {
+            console.log(lastIndex)
             const response = await axios.get(`https://api.open.fec.gov/v1/schedules/schedule_a/?contributor_employer=${company}&contributor_state=${state}&two_year_transaction_period=${dateRange}&per_page=100&last_index=${lastIndex}&sort_null_only=false&sort_hide_null=false&sort=contribution_receipt_date&contributor_type=individual&is_individual=true&api_key=3vvb3VZE0SZq372eLAOqPJhIaaspSBH7HukmNTPK`)
             lastIndex = response.data.pagination.last_indexes.last_index
+            resultsLength = response.data.results.length
             combineEmployeeData(response.data.results)
             return
         }
         catch(error) {
-            throw new Error(error)
+            $('.js-load-1').text(`Oooops! Looks like we ran into some trouble`)
+            $('.js-load-2').text(`Please try searching again!`)
+            $('.js-loading').hide();
+            throw(error)
         }
     }
 }
@@ -86,33 +98,37 @@ const getEmployeeDonations = async (company, dateRange, state, index) => {
 const processEmployeeDonations = async (dataObj, lastIndex) => {
     console.log('processEmployeeDonations ran')
 
+    
+    
     //if there are more pages of donations to get
     for (let i = 1; i <= dataObj.data.pagination.pages; i++) {
-        console.log('current page processing is ', i);
-        console.log('total pages to process are ', dataObj.data.pagination.pages);
-        $('.js-loading h2').text(`Loading employee donations (${Math.floor((i/dataObj.data.pagination.pages)*100)}%)`);
-        await getEmployeeDonations(businessName, dateRange, state, lastIndex);
-    }
-    $('.js-loading h2').text(`We were able to analyze ${allEmployeeDonations.length} employee donations from ${dateRange-1}-${dateRange}!`)
-    //$('.progress').text('');
-    let reduced = reduceDownParty(allEmployeeDonations)
-    
-    allEmployeeDonations.forEach((element) => {
-        if (element.committee.party === null || element.committee.party === "NNE") {
-            pacIDs.push(element.committee.committee_id)
+        if (resultsLength === 100) { //this is to catch when the total pages is incorrect from API
+            console.log('current page processing is ', i);
+            console.log('total pages to process are ', dataObj.data.pagination.pages);
+            $('.js-load-2').text(`Now loading ${businessName} employee donations... (${Math.floor((i/dataObj.data.pagination.pages)*100)}%)`);
+            await getEmployeeDonations(businessName, dateRange, state, lastIndex);
+        } 
+        else {
+            //$('.progress').text('');
+            let reduced = reduceDownParty(allEmployeeDonations)
+            
+            allEmployeeDonations.forEach((element) => {
+                if (element.committee.party === null || element.committee.party === "NNE") {
+                    pacIDs.push(element.committee.committee_id)
+                }
+            });
+            
+            pacIDs = _.countBy(pacIDs)
+
+            //create array of data found when searching employee donations
+            employeeDonations.partyData = reduced
+            employeeDonations.pacData = pacIDs
+            console.log(employeeDonations)
+            //console.log(`Total pages of employee donations is: ${totalPages} and the last index was ${lastIndex}`)
+
+            return employeeDonations
         }
-    });
-    
-    pacIDs = _.countBy(pacIDs)
-
-    //create array of data found when searching employee donations
-    employeeDonations.partyData = reduced
-    employeeDonations.pacData = pacIDs
-    console.log(employeeDonations)
-    //console.log(`Total pages of employee donations is: ${totalPages} and the last index was ${lastIndex}`)
-
-    return employeeDonations
-
+    }
 }
 
 
@@ -314,14 +330,22 @@ function finalTallyOfDonations (arr1, arr2) {
 const processData = async (company, dateRange, state, index) => {
     console.log('processData ran')
     const employeeData = await getEmployeeDonations(company, dateRange, state, index)
+    
+    $('.js-load-1').text(`We were able to find ${allEmployeeDonations.length} ${businessName} employee donations from ${dateRange-1}-${dateRange}!`)
+    $('.js-load-2').text(`Give us another moment while we analyze the data...`)
+    
     const pacDonations = await getPacDonations(employeeDonations.pacData)
+    $('.js-load-1').text(`Quite a bit of data!`)
+    $('.js-load-2').text(`Shouldn't be much longer!`)
+    
     const partiesFoundInPacs = await getPacRecipients(pacDonations)
     const pacAffiliaton = await determinePacAffiliation(partiesFoundInPacs)
     console.log(pacAffiliaton)
     const finalTally = await finalTallyOfDonations(employeeData, pacAffiliaton)
     $('.js-loading').hide();
-    $('.js-data_results').show();
-    $('.js-data_results h2').text(`DEMS: ${finalTally['DEMOCRATIC PARTY']} REP: ${finalTally[null]}`);
+    $('.js-load-1').text(`DEMS: ${finalTally['DEMOCRATIC PARTY']} REP: ${finalTally[null]}`);
+    $('.js-load-2').text('')
+    
     
 
     console.log(finalTally)
