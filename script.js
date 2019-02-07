@@ -1,3 +1,6 @@
+
+const employeeSearchURL = 'https://api.open.fec.gov/v1/schedules/schedule_a/?per_page=100&'
+const apiKey = '3vvb3VZE0SZq372eLAOqPJhIaaspSBH7HukmNTPK'
 let currentPage = 1;
 let pacIDs = [];
 let allEmployeeDonations = [];
@@ -31,7 +34,7 @@ function watchForm() {
         //$('#js-filters').hide();
         $('.js-loading').show();
         $('.js-data_results').show();
-        processData(businessName, dateRange, state);
+        processData(businessName);
 
     })  
 }
@@ -44,15 +47,42 @@ function combineEmployeeData (arr) {
     })
 }
 
+function formatQueryParams(obj) {
+    console.log('formartQueryParams ran')
+    if(obj.contributor_state === '') {
+        delete obj.contributor_state
+    }
 
-const getEmployeeDonations = async (company, dateRange, state, index) => {
+    const queryParms = Object.keys(obj).map(key => 
+        `${encodeURIComponent(key)}=${encodeURIComponent(obj[key])
+        }`);
+    return queryParms.join('&');
+}
+
+
+
+const getEmployeeDonations = async (company, index) => {
     console.log('getEmployeeDonations ran')
     console.log('index is ', lastIndex)
-    if(index === undefined) {
+
+    const params = {
+        contributor_employer: businessName,
+        two_year_transaction_period: dateRange,
+        contributor_state: state,
+        api_key: apiKey,
+    };
+
+    const newQueryString = formatQueryParams(params)
+    const url = `${employeeSearchURL}${newQueryString}`
+    console.log(url)
+
+    //if index is undefined, this is the first time the api is being called
+    if(index === undefined) { 
         console.log('index not defined')
+
         try {
             $('.js-load-1').text(`Please be patient as we load results. This could take a minute...`)
-            const response = await axios.get(`https://api.open.fec.gov/v1/schedules/schedule_a/?contributor_employer=${company}&contributor_state=${state}&two_year_transaction_period=${dateRange}&per_page=100&sort_null_only=false&sort_hide_null=false&sort=contribution_receipt_date&contributor_type=individual&is_individual=true&api_key=3vvb3VZE0SZq372eLAOqPJhIaaspSBH7HukmNTPK`)
+            const response = await axios.get(url)
 
             resultsLength = response.data.results.length
             if (resultsLength === 0) {
@@ -80,7 +110,7 @@ const getEmployeeDonations = async (company, dateRange, state, index) => {
         console.log('index is defined');
         try {
             console.log(lastIndex)
-            const response = await axios.get(`https://api.open.fec.gov/v1/schedules/schedule_a/?contributor_employer=${company}&contributor_state=${state}&two_year_transaction_period=${dateRange}&per_page=100&last_index=${lastIndex}&sort_null_only=false&sort_hide_null=false&sort=contribution_receipt_date&contributor_type=individual&is_individual=true&api_key=3vvb3VZE0SZq372eLAOqPJhIaaspSBH7HukmNTPK`)
+            const response = await axios.get(`${url}&last_index=${lastIndex}`)
             lastIndex = response.data.pagination.last_indexes.last_index
             resultsLength = response.data.results.length
             combineEmployeeData(response.data.results)
@@ -106,7 +136,7 @@ const processEmployeeDonations = async (dataObj, lastIndex) => {
             console.log('current page processing is ', i);
             console.log('total pages to process are ', dataObj.data.pagination.pages);
             $('.js-load-2').text(`Now loading ${businessName} employee donations... (${Math.floor((i/dataObj.data.pagination.pages)*100)}%)`);
-            await getEmployeeDonations(businessName, dateRange, state, lastIndex);
+            await getEmployeeDonations(businessName, lastIndex);
         } 
         else {
             //$('.progress').text('');
@@ -327,9 +357,9 @@ function finalTallyOfDonations (arr1, arr2) {
 
 
 
-const processData = async (company, dateRange, state, index) => {
+const processData = async (company) => {
     console.log('processData ran')
-    const employeeData = await getEmployeeDonations(company, dateRange, state, index)
+    const employeeData = await getEmployeeDonations(company)
     
     $('.js-load-1').text(`We were able to find ${allEmployeeDonations.length} ${businessName} employee donations from ${dateRange-1}-${dateRange}!`)
     $('.js-load-2').text(`Give us another moment while we analyze the data...`)
