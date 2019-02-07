@@ -25,7 +25,7 @@ header>p {
 
 main {
 	height: 400px;
-	border: 2px solid black;
+	border: 10px solid rgb(255, 0, 0);
 }
 
 .flexbox {
@@ -89,8 +89,6 @@ input {
 .results {
 	font-size: 35px;
 }
-
-
 
 .information {
 	display: flex;
