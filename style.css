@@ -59,7 +59,7 @@ input[type=submit] {
 	font-size: 21px;
 	background-color: #1254e4;
 	padding: 8px 12px 8px 12px;
-	box-shadow: 0 12px 16px 0 rgba(0,0,0,0.24), 0 17px 50px 0 rgba(0,0,0,0.19);
+	
 }
 
 input {
@@ -67,7 +67,7 @@ input {
 	font-size: 16px;
 	padding: 4px 12px 4px 12px;
 	border-radius: 4px;
-	box-shadow: 0 12px 16px 0 rgba(0,0,0,0.24), 0 17px 50px 0 rgba(0,0,0,0.19);
+	
 }
 
 .data_container {
