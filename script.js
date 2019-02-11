@@ -54,6 +54,7 @@ function watchForm() {
         allCombinedUnknownPacData = [];
         unknownPacDonationsReduced = [];
         unknownPacsAffiliation = [];
+        employeeSearchLimit = 0;
         processData(businessName);
     })  
 }
