@@ -20,6 +20,7 @@ let foundPacAfflitation = {};
 let allCombinedUnknownPacData = [];
 let unknownPacDonationsReduced = [];
 let unknownPacsAffiliation = [];
+let employeeSearchLimit = 0;
 
 
 function watchForm() {
@@ -27,6 +28,7 @@ function watchForm() {
     $('#js-filters').submit(event => {
         event.preventDefault();
         $('.js-data_results').hide();
+        $('.js-intro').hide();
         pacIDs = []
         allEmployeeDonations = []
         employeeDonations = []
@@ -59,6 +61,7 @@ function watchForm() {
 
 function combineEmployeeData (arr) {
     console.log('combineEmployeeData ran')
+    //console.log('arr', arr)
     arr.forEach((itm) => {
         allEmployeeDonations.push(itm)
     })
@@ -98,12 +101,14 @@ const getEmployeeDonations = async (company, index) => {
         try {
             $('.js-load-1').text('')
             $('.js-load-2').text(`Please be patient as we gather data. This could take a minute...`)
+            $('.js-load-3').text('');
             const response = await axios.get(url)
 
             resultsLength = response.data.results.length
             if (resultsLength === 0) {
                 $('.js-load-1').text(`Couldn't find any data for ${businessName} during the ${dateRange} period in ${state}.`)
                 $('.js-load-2').text(`Please try another time period or company.`)
+                $('.js-load-3').text('');
                 $('.js-loading').hide();
                 throw 'No company data!'
             }
@@ -119,21 +124,25 @@ const getEmployeeDonations = async (company, index) => {
         
         //how do I log the actual error that is being displayed (i.e. incorrect API key)    
         } catch(err) {
-            $('.js-load-1').text(`Oooops! Looks like we ran into some trouble`)
+            $('.js-load-1').text(`Oooops! Looks like we ran into some trouble or couldn't find any company data`)
             $('.js-load-2').text(`Please try searching again!`)
+            $('.js-load-3').text('');
             $('.js-loading').hide();
             throw(err);
         }
     }
     else {
         console.log('index is defined');
+        console.log('employeeSearchLimit is at ', employeeSearchLimit)
+        
         
         try {
             const response = await axios.get(`${url}&last_index=${lastIndex}`)
             
-            if(response.data.pagination.last_indexes === null) {
+            if(response.data.pagination.last_indexes === null || employeeSearchLimit === 15) {
                 console.log('Final Index Reached')
-                finalIndexReached = true
+                employeeSearchLimit = 0;
+                finalIndexReached = true;
                 return
             }
             else {
@@ -144,8 +153,9 @@ const getEmployeeDonations = async (company, index) => {
             }
         }
         catch(error) {
-            $('.js-load-1').text(`Oooops! Looks like we ran into some trouble`)
-            $('.js-load-2').text(`Please try searching again!`)
+            $('.js-load-1').text(`Oooops! Looks like we ran into some trouble`);
+            $('.js-load-2').text(`Please try searching again!`);
+            $('.js-load-3').text('');
             $('.js-loading').hide();
             throw(error)
         }
@@ -157,13 +167,15 @@ const processEmployeeDonations = async (dataObj) => {
 
     //if there are more pages of donations to get
     //for (let i = 1; i <= dataObj.data.pagination.pages; i++) {
-    for (let i = 1; i <= 20; i++) { //testing to see if using index works better
+    for (let i = 1; i <= 99; i++) { //testing to see if using index works better
+        employeeSearchLimit++;
         //if (resultsLength === 100) { //this is to catch when the total pages is incorrect from API
         if (finalIndexReached === false) { //this is to catch when the total pages is incorrect from API
+            console.log('current page processing is ', i);
             console.log('total pages to process are ', dataObj.data.pagination.pages);
-            $('.js-load-1').text(`Now loading ${businessName} employee donations...`); //(${Math.floor((i/dataObj.data.pagination.pages)*100)}%)
+            $('.js-load-1').text(`Now loading ${businessName} employee donations...`);
+            $('.js-load-3').text(Math.floor((i/15)*100) + '%')
             await getEmployeeDonations(businessName, lastIndex);
-            
         } 
         else {
             let reduced = reduceDownParty(allEmployeeDonations)
@@ -805,6 +817,7 @@ const processData = async (company) => {
     
     $('.js-load-1').text(`We were able to find ${allEmployeeDonations.length} ${businessName} employee donations from ${dateRange-1}-${dateRange}!`)
     $('.js-load-2').text(`Give us another moment while we analyze the data...`)
+    $('.js-load-3').text('');
 
     
 

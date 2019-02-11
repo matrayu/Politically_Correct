@@ -4,11 +4,14 @@
 
 body {
 	margin: 5px 12px;
-	min-width: 296px;
+	min-width: 360px;
 	font-family: 'Oswald', sans-serif;
 }
 
 header {
+	margin-left: auto;
+    margin-right: auto;
+    width: 94%;
 }
 
 header>h1 {
@@ -24,8 +27,10 @@ header>p {
 }
 
 main {
-	height: 400px;
-	border: 10px solid rgb(255, 0, 0);
+	height: 450px;
+	border: 6px solid rgb(255, 0, 0);
+	width: 94%;
+	margin: 0 auto 0 auto;
 }
 
 .flexbox {
@@ -77,6 +82,7 @@ input {
 	justify-content: center;
 	flex-direction: column;
 	margin: 5px;
+	padding: 8px;
 	text-align: center;
 	color: white;
 	background: rgb(16, 84, 227);
@@ -87,7 +93,7 @@ input {
 }
 
 .results {
-	font-size: 35px;
+	font-size: 23px;
 }
 
 .information {

@@ -35,10 +35,10 @@
                         </div>
                     </div>
                     <div class="search-grouping">
-                        <label class="label" for="date_range">Time Period</label>
+                        <label class="label" for="date_range">Election Cycle</label>
                         <div class="filter-search">
                             <div class="date_range_select"></div>
-                                <input list="date_range" name="date_range" id="js_date_range" value="2012">
+                                <input list="date_range" name="date_range" id="js_date_range" value="">
                                 <datalist id="date_range">
                                     <option value="2018">2017-2018</option>
                                     <option value="2016">2015-2016</option>
@@ -68,7 +68,7 @@
                     <div class="search-grouping">
                         <label class="label" for="state_select">State</label>
                         <div class="filter-search">
-                            <input list="states" name="states" id="js-state" value="CA">
+                            <input list="states" name="states" id="js-state" value="">
                             <datalist id="states">
                                 <option value="AL">Alabama (AL)</option>
                                 <option value="AK">Alaska (AK)</option>
@@ -139,9 +139,16 @@
             </section>
 
             <div class="data_container">
-                <div class="data_results js-data_results" style="display: none;">
+                <div class='intro js-intro'>
+                    <h2>Welcome to Politically Correct</h2>
+                    <p>This site will provide you with an eye into the pollitical leanings of a company based on how its employees and executives donate in any recent election cycle.</p>
+                    <p>Simply enter a business name, an election cycle, and a state (optional)... and presto!</p>
+                    <p>Please keep in mind that the results may take several minutes to load, so be patient.</p>
+                </div>
+                <div class="data_results js-data_results" style="display:;">
                     <p class="loading js-load-1"></p>
                     <p class="loading js-load-2"></p>
+                    <p class="loading js-load-3">Hello</p>
                     <p class="results js-dem-results"></p>
                     <p class="results js-rep-results"></p>
                     <p id="js-error-message" class="error-message"></p>
@@ -158,7 +165,7 @@
         
     </main>
 
-    <footer>Copyright MF</footer>
+    <footer>&copy 99 Percent 2019</footer>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.15.0/lodash.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/0.18.0/axios.min.js"></script>
