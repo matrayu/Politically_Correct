@@ -165,7 +165,7 @@ const processEmployeeDonations = async (dataObj) => {
         $('.js-load-3').text(Math.floor((employeeSearchLimit/15)*100) + '%')
         await getEmployeeDonations(businessName, lastIndex);
     } 
-    
+
     let reduced = reduceDownParty(allEmployeeDonations)
     
     let uknonwnPacDonations = []
@@ -192,7 +192,6 @@ const processEmployeeDonations = async (dataObj) => {
     
 }
 
-//returns an array with the pacID and the receipiants of it's donations (pacData)
 const getPacDonations = async (pacID) => {
     console.log('getPacDonations ran')
     console.log('pacID', pacID)
@@ -205,7 +204,6 @@ const getPacDonations = async (pacID) => {
             
             let pacData = [];
             const resultsData = response.data.results
-            
             
             for(let i = 0; i < resultsData.length; i++) {
                 if (resultsData[i].memo_total != 0) {
@@ -225,13 +223,12 @@ const getPacDonations = async (pacID) => {
                 pacData
             })
 
-
         } catch(error) {
             throw new Error(error)
         }
     }
     
-    
+    //returns an array with the pacID and the receipiants of it's donations (pacData)
     return pacDonations;
 }
 
@@ -240,7 +237,6 @@ const getPacRecipients = async (pacDonations) => {
     
     let processedPacData = [];
     
-    //get PAC id
     for (i = 0; i < pacDonations.length; i++) {
         //console.log(`PAC ${pacDonations[i].pacID} has donated to ${pacDonations[i].pacData.length} people/pacs.`)
         let pacString = '';
@@ -291,9 +287,6 @@ const getPacRecipients = async (pacDonations) => {
 const determinePacAffiliation = async (pacParties) => {
     console.log('determinePacAffiliation ran')
 
-    //console.log('pacParties')
-    //console.log(pacParties)
-
     let pacAff = []
     pacParties.forEach((pac, i) => {
         let pacID = pac.pop();
@@ -334,16 +327,13 @@ const determinePacAffiliation = async (pacParties) => {
     return(pacAff)
 }
 
-
-//returns an array with the pacID and the receipiants of it's donations (pacData)
-const getPacDonationsFromUndertermined = async (pacID) => {
+const getPacDonationsFromUndertermined = async (pacID) => { //this currently is not being called
     console.log('getPacDonationsFromUndertermined ran')
     pacDonations = []
 
     for (i = 0; i < Object.keys(pacID).length; i++) {
         try {
             const response = await axios.get(`https://api.open.fec.gov/v1/committee/${pacID[i].committee_id}/schedules/schedule_b/by_recipient_id/?page=1&sort_nulls_last=false&sort_hide_null=false&per_page=100&sort_null_only=false&api_key=3vvb3VZE0SZq372eLAOqPJhIaaspSBH7HukmNTPK`)
-            console.log('THIS SHIT RAN!!!!!!!!!!')
             let pacData = [];
             const resultsData = response.data.results
             
@@ -374,26 +364,11 @@ const getPacDonationsFromUndertermined = async (pacID) => {
     
     console.log('pacDonations', pacDonations)
 
+    //returns an array with the pacID and the receipiants of it's donations (pacData)
     return pacDonations;
 }
 
-
-const processDonationsFromUnknownPacs = async (receivedMoneyFromUnknownPacArr) => {
-    console.log('processDonationsFromUnknownPacs ran')
-    console.log('receivedMoneyFromUnknownPacArr', receivedMoneyFromUnknownPacArr)
-    const morePacDonations = await getPacDonationsFromUndertermined(receivedMoneyFromUnknownPacArr)
-    //console.log(morePacDonations)
-    const morePartiesFoundInPacs = await getPacRecipients(morePacDonations)
-    const pacAffiliaton = await determinePacAffiliation(morePartiesFoundInPacs)
-    console.log('pacAffiliaton!!!!!', pacAffiliaton)
-    foundPacAfflitation = pacAffiliaton;
-    console.log('foundPacAfflitation', foundPacAfflitation)
-    const pacAffResults = await determineUndeterminedPacs(tempreceivedMoneyFromUnknownPacArrPACs, pacAffiliaton)
-
-}
-
-
-function determineUndeterminedPacs(arr1, arr2) {
+function determineUndeterminedPacs(arr1, arr2) { //this is currently not being called
     console.log('determineUndeterminedPacs ran');
     console.log('arr2', arr2)
     let pacBeingChecked = (arr1[0].pac)
@@ -426,17 +401,25 @@ function determineUndeterminedPacs(arr1, arr2) {
     console.log('pacResult', pacResult)
 }
 
+const processDonationsFromUnknownPacs = async (receivedMoneyFromUnknownPacArr) => { //this is currently not being called
+    console.log('processDonationsFromUnknownPacs ran')
+    console.log('receivedMoneyFromUnknownPacArr', receivedMoneyFromUnknownPacArr)
+    const morePacDonations = await getPacDonationsFromUndertermined(receivedMoneyFromUnknownPacArr)
+    //console.log(morePacDonations)
+    const morePartiesFoundInPacs = await getPacRecipients(morePacDonations)
+    const pacAffiliaton = await determinePacAffiliation(morePartiesFoundInPacs)
+    console.log('pacAffiliaton!!!!!', pacAffiliaton)
+    foundPacAfflitation = pacAffiliaton;
+    console.log('foundPacAfflitation', foundPacAfflitation)
+    const pacAffResults = await determineUndeterminedPacs(tempreceivedMoneyFromUnknownPacArrPACs, pacAffiliaton)
+}
+
 function combineUnknownPacData(pacData, unknownPacDonationsReduced, foundPacAffiliation) {
     console.log('combineUnknownPacData ran')
-    console.log('pacData', pacData)
-    console.log('unknownPacDonationsReduced', unknownPacDonationsReduced)
-    console.log('foundPacAffiliation', foundPacAffiliation)
-
+    
     for(i = 0; i < Object.keys(pacData).length; i++) {
         allCombinedUnknownPacData.push({
           pacID: Object.keys(pacData)[i],
-          //totalNum: Object.values(pacData)[i], 
-          //party_full: foundPacAffiliation[i].pacParty
         })
     }
     
@@ -444,7 +427,6 @@ function combineUnknownPacData(pacData, unknownPacDonationsReduced, foundPacAffi
         unknownPacDonationsReduced.forEach(function (x, i) {
             if (d.pacID === unknownPacDonationsReduced[i].recipient_id) {
                 allCombinedUnknownPacData[e].totalAmt = unknownPacDonationsReduced[i].totalAmt
-                //allCombinedUnknownPacData[e].party_full = foundPacAffiliation[i].pacParty
             }
         })
     })
@@ -459,20 +441,14 @@ function combineUnknownPacData(pacData, unknownPacDonationsReduced, foundPacAffi
 
     allCombinedUnknownPacData.forEach(function (d, e) {
         foundPacAffiliation.forEach(function (x, i) {
-          //console.log('x', x.pacID)
             if (d.pacID === x.pacID) {
                 allCombinedUnknownPacData[e].party = x.pacParty
             }
         })
     })
-    
-    //console.log(allCombinedUnknownPacData)
-
-    
 
     return allCombinedUnknownPacData
 }
-
 
 function reduceDownParty(arr) { 
     console.log('reduceDownParty ran');
@@ -497,15 +473,12 @@ function reduceDownParty(arr) {
             totalCash[d.committee.party_full] = d.contribution_receipt_amount
         }
     });
-  
     
     arr.forEach(function (d) {
         if(d.committee.party_full === null || d.committee.party_full === 'None') {
             if(unknownPacDonations.hasOwnProperty(d.committee.committee_id)) {
-                //unknownPacDonations[d.committee.committee_id] = unknownPacDonations[d.committee.committee_id] + 1
                 unknownPacDonations[d.committee.committee_id] += Number(d.contribution_receipt_amount)
             } else {
-                //unknownPacDonations[d.committee.committee_id] = 1
                 unknownPacDonations[d.committee.committee_id] = Number(d.contribution_receipt_amount)
             }  
         }
@@ -518,9 +491,7 @@ function reduceDownParty(arr) {
     return (obj1)
 }
 
-
-//reduce down donations by party and combine their totals
-function reduceDownDonationByParty(arr) { 
+function reduceDownDonationByParty(arr) { //reduce down donations by party and combine their totals
     console.log('reduceDownDonationByParty ran');
 
     let holder = {};
@@ -547,8 +518,7 @@ function reduceDownDonationByParty(arr) {
     return(obj2);
 }
 
-//reduce down donations and add together
-function reduceDownDonationsByID(arr) {
+function reduceDownDonationsByID(arr) { //reduce down donations and add together
     console.log('reduceDownDonationsByID ran');
     
     donationsByID = [];
@@ -570,9 +540,9 @@ function reduceDownDonationsByID(arr) {
     return donationsByID
 }
 
-function finalReduceDownParty(arr) { 
+function finalReduceDownParty(arr) { //once unknown PACs are determined, do a final reduce to combine them all
     console.log('finalReduceDownParty ran');
-    console.log('arr', arr)
+    console.log('Combined data for unknown pacs', arr)
     
     let totalNum = {};
     let totalCash = {}
@@ -587,8 +557,6 @@ function finalReduceDownParty(arr) {
         }
     });
   
-    console.log('totalNum', totalNum)
-  
     arr.forEach(function (d) {
         if(totalCash.hasOwnProperty(d.party)) {
             totalCash[d.party] += d.totalAmt
@@ -596,17 +564,12 @@ function finalReduceDownParty(arr) {
             totalCash[d.party] = d.totalAmt
         }
     });
-  
-    console.log('totalCash', totalCash)
-  
     
     arr.forEach(function (d) {
         if(d.party_full === null || d.party_full === 'None') {
             if(unknownPacDonations.hasOwnProperty(d.committee_id)) {
-                //unknownPacDonations[d.committee.committee_id] = unknownPacDonations[d.committee.committee_id] + 1
                 unknownPacDonations[d.committee_id] += Number(d.contribution_receipt_amount)
             } else {
-                //unknownPacDonations[d.committee.committee_id] = 1
                 unknownPacDonations[d.committee_id] = Number(d.contribution_receipt_amount)
             }  
         }
@@ -619,9 +582,8 @@ function finalReduceDownParty(arr) {
     return (obj1)
 }
 
-
 function reallyFinalReduceDownParty(arr) { 
-    console.log('finalReduceDownParty ran');
+    console.log('reallyFinalReduceDownParty ran');
     
     let totalNum = {};
     let totalCash = {}
@@ -635,8 +597,6 @@ function reallyFinalReduceDownParty(arr) {
             totalNum[d.party] = d.totalNum
         }
     });
-  
-    //console.log('totalNum', totalNum)
   
     arr.forEach(function (d) {
         if(totalCash.hasOwnProperty(d.party)) {
@@ -656,15 +616,10 @@ function reallyFinalReduceDownParty(arr) {
     return (obj1)
 }
 
-
-
 function finalTallyOfDonations (foundPacs, employees) {
     console.log('finalTallyOfDonations ran');
     console.log('foundPacs', foundPacs)
     console.log('employees', employees)
-
-    let totalCashFound = 0
-    let totalDonationsFound = 0
 
     finalResults = [];
 
@@ -683,72 +638,7 @@ function finalTallyOfDonations (foundPacs, employees) {
     console.log('finalReduced', finalReduced)
 
     return finalReduced
-  
-  
-/*
-    arr1.forEach(function (d, e) {
-        if(d.party_full != arr2.party) {
-        finalResults.push({
-            'party': d.party_full,
-            'totalAmt': d.totalAmt,
-            'totalNum': d.totalNum,
-        })
-        }
-    })
 
-    let holder = {}
-
-    finalResults.forEach(function (d) {
-        if(holder.hasOwnProperty(d.party_full)) {
-            holder[d.totalAmt] = holder[d.totalAmt] + Number(d.totalAmt);
-            holder[d.totalNum] = holder[d.totalNum] + Number(d.totalNum);
-        } else {
-        holder['party_full'] = d.party_full
-        holder['totalAmt'] = d.totalAmt
-        holder['totalNum'] = d.totalNum
-        }
-    });
-
-    console.log('holder', holder)
-
-
-    employees.forEach(function (d, e) {
-        //console.log(d)
-        foundPacs.forEach(function (x, i) {
-        console.log('here', i, d.party, x.party_full)
-        if (d.party === x.party_full) {
-            //console.log(d)
-            //console.log(x.totalAmt)
-            //console.log(d.party)
-            d.totalAmt += x.totalAmt;
-            totalCashFound += x.totalAmt;
-            d.totalNum += x.totalNum;
-            totalDonationsFound += x.totalNum;
-        }
-        else {
-            //console.log('add it', i, )
-            employees.push({
-            'party': x.party_full,
-            'totalAmt': x.totalAmt,
-            'totalNum': x.totalNum,
-            })
-            totalCashFound += x.totalAmt;
-            totalDonationsFound += x.totalNum;
-        }
-        })
-    })
-
-    employees.forEach(function (d) {
-        if (d.party === 'null') {
-        d.totalAmt -= totalCashFound;
-        d.totalNum -= totalDonationsFound;
-        }
-    })
-*/
-
-
-    //console.log(finalResults)
-    return(employees)
 }
 
 function loadResultsToPage(finalResults) {
@@ -795,8 +685,6 @@ function loadResultsToPage(finalResults) {
     }
 }
 
-
-
 const processData = async (company) => {
     console.log('processData ran')
 
@@ -805,8 +693,6 @@ const processData = async (company) => {
     $('.js-load-1').text(`We were able to find ${allEmployeeDonations.length} ${businessName} employee donations from ${dateRange-1}-${dateRange}!`)
     $('.js-load-2').text(`Give us another moment while we analyze the data...`)
     $('.js-load-3').text('');
-
-    
 
     const pacDonations = await getPacDonations(employeeDonations.pacData)
     $('.js-load-1').text(`Quite a bit of data!`)
@@ -824,15 +710,5 @@ const processData = async (company) => {
     
     loadResultsToPage(finalTally)
 }
-
-/*
-processData('Monsanto', 2016, 'IL', 600)
-    .then((message) => {
-        console.log(message);
-    }).catch((error) => {
-        console.log(error.message)
-    })
-*/
-
 
 $(watchForm)
