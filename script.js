@@ -41,15 +41,10 @@ function watchForm() {
         $('.business-name').text(businessName);
         $('.time-period').text(dateRange);
         $('.state').text(state);
-        //$('.progress').text('Loading...');
-        //$('#js-filters').hide();
         $('.js-loading').show();
         $('.js-data_results').show();
         $('.js-dem-results').text('');
         $('.js-rep-results').text('');
-        console.log('foundPacAfflitation', foundPacAfflitation)
-        console.log('nullPacs', nullPacs)
-        console.log('receivedMoneyFromUnknownPacArr', receivedMoneyFromUnknownPacArr),
         pacDonationsToPacs = [];
         allCombinedUnknownPacData = [];
         unknownPacDonationsReduced = [];
@@ -62,7 +57,6 @@ function watchForm() {
 
 function combineEmployeeData (arr) {
     console.log('combineEmployeeData ran')
-    //console.log('arr', arr)
     arr.forEach((itm) => {
         allEmployeeDonations.push(itm)
     })
@@ -80,8 +74,6 @@ function formatQueryParams(obj) {
     return queryParms.join('&');
 }
 
-
-
 const getEmployeeDonations = async (company, index) => {
     console.log('getEmployeeDonations ran')
 
@@ -96,8 +88,7 @@ const getEmployeeDonations = async (company, index) => {
     const url = `${employeeSearchURL}${newQueryString}`
 
     //if index is undefined, this is the first time the api is being called
-    if(index === undefined) { 
-        console.log('index not defined')
+    if(index === undefined) {
 
         try {
             $('.js-load-1').text('')
@@ -120,7 +111,6 @@ const getEmployeeDonations = async (company, index) => {
             combineEmployeeData(response.data.results)
 
             const totalEmployeeDonations = await processEmployeeDonations(response, lastIndex);
-            console.log('totalEmployeeDonations', totalEmployeeDonations)
             return totalEmployeeDonations
         
         //how do I log the actual error that is being displayed (i.e. incorrect API key)    
@@ -134,7 +124,7 @@ const getEmployeeDonations = async (company, index) => {
     }
     else {
         console.log('index is defined');
-        console.log('employeeSearchLimit is at ', employeeSearchLimit)
+        console.log('employeeSearchLimit is at ', employeeSearchLimit, 'of 15')
         
         
         try {
@@ -166,44 +156,40 @@ const getEmployeeDonations = async (company, index) => {
 const processEmployeeDonations = async (dataObj) => {
     console.log('processEmployeeDonations ran')
 
-    //if there are more pages of donations to get
-    //for (let i = 1; i <= dataObj.data.pagination.pages; i++) {
-    for (let i = 1; i <= 99; i++) { //testing to see if using index works better
+    //while there are more pages of donations to get
+    while (finalIndexReached === false) {
         employeeSearchLimit++;
-        //if (resultsLength === 100) { //this is to catch when the total pages is incorrect from API
-        if (finalIndexReached === false) { //this is to catch when the total pages is incorrect from API
-            console.log('current page processing is ', i);
-            console.log('total pages to process are ', dataObj.data.pagination.pages);
-            $('.js-load-1').text(`Now loading ${businessName} employee donations...`);
-            $('.js-load-3').text(Math.floor((i/15)*100) + '%')
-            await getEmployeeDonations(businessName, lastIndex);
-        } 
-        else {
-            let reduced = reduceDownParty(allEmployeeDonations)
-            
-            let uknonwnPacDonations = []
+        console.log('current page processing is ', employeeSearchLimit);
+        console.log('total pages to process are ', dataObj.data.pagination.pages);
+        $('.js-load-1').text(`Now loading ${businessName} employee donations...`);
+        $('.js-load-3').text(Math.floor((employeeSearchLimit/15)*100) + '%')
+        await getEmployeeDonations(businessName, lastIndex);
+    } 
+    
+    let reduced = reduceDownParty(allEmployeeDonations)
+    
+    let uknonwnPacDonations = []
 
-            allEmployeeDonations.forEach((element) => {
-                if (element.committee.party === null || element.committee.party === "NNE") {
-                    pacIDs.push(element.committee.committee_id)
-                    uknonwnPacDonations.push({recipient_id: element.committee.committee_id, totalAmt: element.contribution_receipt_amount})
-                }
-            });
-
-            unknownPacDonationsReduced = reduceDownDonationsByID(uknonwnPacDonations)
-            console.log('unknownPacDonationsReduced', unknownPacDonationsReduced)
-            
-            pacIDs = _.countBy(pacIDs)
-
-            //create array of data found when searching employee donations
-            employeeDonations.partyData = reduced
-            employeeDonations.pacData = pacIDs
-
-            console.log('employeeDonations', employeeDonations)
-
-            return employeeDonations
+    allEmployeeDonations.forEach((element) => {
+        if (element.committee.party === null || element.committee.party === "NNE") {
+            pacIDs.push(element.committee.committee_id)
+            uknonwnPacDonations.push({recipient_id: element.committee.committee_id, totalAmt: element.contribution_receipt_amount})
         }
-    }
+    });
+
+    unknownPacDonationsReduced = reduceDownDonationsByID(uknonwnPacDonations)
+    console.log('unknownPacDonationsReduced', unknownPacDonationsReduced)
+    
+    pacIDs = _.countBy(pacIDs)
+
+    //create array of data found when searching employee donations
+    employeeDonations.partyData = reduced
+    employeeDonations.pacData = pacIDs
+
+    console.log('employeeDonations', employeeDonations)
+
+    return employeeDonations
+    
 }
 
 //returns an array with the pacID and the receipiants of it's donations (pacData)
