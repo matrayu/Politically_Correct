@@ -90,6 +90,11 @@ input {
 	background: rgb(16, 84, 227);
 }
 
+.required {
+	color: red;
+	font-size: 16px;
+}
+
 .loading {
 	font-size: 21px;
 }
