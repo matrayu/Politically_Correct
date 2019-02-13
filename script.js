@@ -1,3 +1,4 @@
+//'use strict';
 
 const employeeSearchURL = 'https://api.open.fec.gov/v1/schedules/schedule_a/?per_page=100&';
 const apiKey = '3vvb3VZE0SZq372eLAOqPJhIaaspSBH7HukmNTPK';
