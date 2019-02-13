@@ -6,6 +6,7 @@ let pacIDs = [];
 let allEmployeeDonations = [];
 let employeeDonations = [];
 let lastIndex = ''; //this is the previous index that was obtained from API
+let lastContributionAmount = '' //use for pagination results
 let finalIndexReached = false;
 let businessName = '';
 let dateRange = '';
@@ -32,12 +33,14 @@ function watchForm() {
         pacIDs = []
         allEmployeeDonations = []
         employeeDonations = []
-        lastIndex = ''
+        lastIndex = '';
+        lastContributionAmount = '';
         businessName = $('#js-contributor_employer').val();
         dateRange = $('#js_date_range').val();
         state = $('#js-state').val();
         totalContributions = 0;
         currentPage = 1;
+        finalIndexReached = false;
         $('.business-name').text(businessName);
         $('.time-period').text(dateRange);
         $('.state').text(state);
@@ -55,7 +58,7 @@ function watchForm() {
 }
 
 
-function combineEmployeeData (arr) {
+function combineEmployeeData(arr) {
     console.log('combineEmployeeData ran')
     arr.forEach((itm) => {
         allEmployeeDonations.push(itm)
@@ -107,10 +110,11 @@ const getEmployeeDonations = async (company, index) => {
                 
             totalPages = response.data.pagination.pages
             lastIndex = response.data.pagination.last_indexes.last_index
+            lastContributionAmount = response.data.pagination.last_indexes.last_contribution_receipt_date
 
             combineEmployeeData(response.data.results)
 
-            const totalEmployeeDonations = await processEmployeeDonations(response, lastIndex);
+            const totalEmployeeDonations = await processEmployeeDonations(response, lastIndex, lastContributionAmount);
             return totalEmployeeDonations
         
         //how do I log the actual error that is being displayed (i.e. incorrect API key)    
@@ -124,13 +128,13 @@ const getEmployeeDonations = async (company, index) => {
     }
     else {
         console.log('index is defined');
-        console.log('employeeSearchLimit is at ', employeeSearchLimit, 'of 15')
+        //console.log('employeeSearchLimit is at ', employeeSearchLimit, 'of 15')
         
         
         try {
-            const response = await axios.get(`${url}&last_index=${lastIndex}`)
+            const response = await axios.get(`${url}&last_index=${lastIndex}&last_contribution_receipt_date=${lastContributionAmount}`)
             
-            if(response.data.pagination.last_indexes === null || employeeSearchLimit === 15) {
+            if(response.data.pagination.last_indexes === null) {
                 console.log('Final Index Reached')
                 employeeSearchLimit = 0;
                 finalIndexReached = true;
@@ -138,6 +142,8 @@ const getEmployeeDonations = async (company, index) => {
             }
             else {
                 lastIndex = response.data.pagination.last_indexes.last_index
+                lastContributionAmount = response.data.pagination.last_indexes.last_contribution_receipt_date
+
                 resultsLength = response.data.results.length
                 combineEmployeeData(response.data.results)
                 return
@@ -162,8 +168,8 @@ const processEmployeeDonations = async (dataObj) => {
         console.log('current page processing is ', employeeSearchLimit);
         console.log('total pages to process are ', dataObj.data.pagination.pages);
         $('.js-load-1').text(`Now loading ${businessName} employee donations...`);
-        $('.js-load-3').text(Math.floor((employeeSearchLimit/15)*100) + '%')
-        await getEmployeeDonations(businessName, lastIndex);
+        $('.js-load-3').text(Math.floor((employeeSearchLimit/dataObj.data.pagination.pages)*100) + '%')
+        await getEmployeeDonations(businessName, lastIndex, lastContributionAmount);
     } 
 
     let reduced = reduceDownParty(allEmployeeDonations)
@@ -616,7 +622,7 @@ function reallyFinalReduceDownParty(arr) {
     return (obj1)
 }
 
-function finalTallyOfDonations (foundPacs, employees) {
+function finalTallyOfDonations(foundPacs, employees) {
     console.log('finalTallyOfDonations ran');
     console.log('foundPacs', foundPacs)
     console.log('employees', employees)
